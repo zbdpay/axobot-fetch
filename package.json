@@ -3,6 +3,20 @@
   "version": "0.0.0-development",
   "description": "L402-capable fetch client with ZBD payment integration hooks",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zbdpay/agent-fetch.git"
+  },
+  "bugs": {
+    "url": "https://github.com/zbdpay/agent-fetch/issues"
+  },
+  "homepage": "https://github.com/zbdpay/agent-fetch#readme",
+  "keywords": [
+    "zbd",
+    "lightning",
+    "l402",
+    "fetch"
+  ],
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
