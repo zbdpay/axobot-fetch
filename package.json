@@ -1,6 +1,6 @@
 {
   "name": "@zbdpay/agent-fetch",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "L402-capable fetch client with ZBD payment integration hooks",
   "license": "MIT",
   "repository": {

@@ -1,3 +1,9 @@
+## [1.0.2](https://github.com/zbdpay/agent-fetch/compare/1.0.1...1.0.2) (2026-02-25)
+
+### Bug Fixes
+
+* retrigger release after npm token rotation ([7376aec](https://github.com/zbdpay/agent-fetch/commit/7376aec0a2570c8a94e401c7db63a28a043b91a4))
+
 ## [1.0.1](https://github.com/zbdpay/agent-fetch/compare/1.0.0...1.0.1) (2026-02-25)
 
 ### Bug Fixes
