@@ -25,6 +25,29 @@ afterEach(async () => {
 });
 
 describe("public API foundation", () => {
+  it("passes through non-402 responses without paying", async () => {
+    const server = await startMockServer({
+      "GET /public": (_req, res) => {
+        res.statusCode = 200;
+        res.setHeader("content-type", "application/json");
+        res.end(JSON.stringify({ ok: true }));
+      },
+    });
+    cleanup.push(() => server.close());
+
+    let payCalls = 0;
+    const response = await agentFetch(`${server.url}/public`, {
+      pay: async () => {
+        payCalls += 1;
+        return { preimage: "never" };
+      },
+    });
+
+    expect(response.status).toBe(200);
+    expect(payCalls).toBe(0);
+    expect(server.hits["GET /public"]).toBe(1);
+  });
+
   it("parses a 402 challenge from headers", () => {
     const headers = new Headers({
       "www-authenticate":
@@ -129,6 +152,148 @@ describe("public API foundation", () => {
     });
     expect(second.status).toBe(200);
     expect(server.hits["GET /protected"]).toBe(3);
+  });
+
+  it("drops stale cached token and retries payment flow", async () => {
+    const server = await startMockServer({
+      "GET /stale": (req, res) => {
+        const auth = req.headers.authorization;
+        if (auth === "L402 stale-mac:stale-pre") {
+          res.statusCode = 401;
+          res.end("stale");
+          return;
+        }
+
+        if (!auth) {
+          res.statusCode = 402;
+          res.setHeader("content-type", "application/json");
+          res.setHeader(
+            "www-authenticate",
+            'L402 macaroon="fresh-mac", invoice="lnbc1fresh", paymentHash="fresh-hash", amountSats="7"',
+          );
+          res.end(
+            JSON.stringify({
+              challenge: {
+                scheme: "L402",
+                macaroon: "fresh-mac",
+                invoice: "lnbc1fresh",
+                paymentHash: "fresh-hash",
+                amountSats: 7,
+              },
+            }),
+          );
+          return;
+        }
+
+        if (auth === "L402 fresh-mac:fresh-pre") {
+          res.statusCode = 200;
+          res.setHeader("content-type", "application/json");
+          res.end(JSON.stringify({ ok: true }));
+          return;
+        }
+
+        res.statusCode = 403;
+        res.end("unexpected_authorization");
+      },
+    });
+    cleanup.push(() => server.close());
+
+    const dir = await mkdtemp(join(tmpdir(), "agent-fetch-stale-"));
+    cleanup.push(() => rm(dir, { recursive: true, force: true }));
+    const cachePath = join(dir, "token-cache.json");
+    const cache = new FileTokenCache(cachePath);
+    await cache.set(`${server.url}/stale`, {
+      authorization: "L402 stale-mac:stale-pre",
+    });
+
+    let payCalls = 0;
+    const response = await agentFetch(`${server.url}/stale`, {
+      tokenCache: cache,
+      pay: async () => {
+        payCalls += 1;
+        return {
+          preimage: "fresh-pre",
+          amountPaidSats: 7,
+        };
+      },
+    });
+
+    expect(response.status).toBe(200);
+    expect(payCalls).toBe(1);
+    expect(server.hits["GET /stale"]).toBe(3);
+
+    const cacheContents = await readFile(cachePath, "utf8");
+    expect(cacheContents).toContain("fresh-mac:fresh-pre");
+    expect(cacheContents).not.toContain("stale-mac:stale-pre");
+  });
+
+  it("evicts expired token and repays without sending stale authorization", async () => {
+    const seenAuth: Array<string | null> = [];
+    const server = await startMockServer({
+      "GET /expires": (req, res) => {
+        const auth = req.headers.authorization ?? null;
+        seenAuth.push(auth);
+
+        if (!auth) {
+          res.statusCode = 402;
+          res.setHeader("content-type", "application/json");
+          res.setHeader(
+            "www-authenticate",
+            'L402 macaroon="exp-mac", invoice="lnbc1exp", paymentHash="exp-hash", amountSats="6"',
+          );
+          res.end(
+            JSON.stringify({
+              challenge: {
+                scheme: "L402",
+                macaroon: "exp-mac",
+                invoice: "lnbc1exp",
+                paymentHash: "exp-hash",
+                amountSats: 6,
+                expiresAt: Math.floor(Date.now() / 1000) + 120,
+              },
+            }),
+          );
+          return;
+        }
+
+        if (auth === "L402 exp-mac:exp-pre") {
+          res.statusCode = 200;
+          res.end("ok");
+          return;
+        }
+
+        res.statusCode = 401;
+        res.end("unexpected_authorization");
+      },
+    });
+    cleanup.push(() => server.close());
+
+    const dir = await mkdtemp(join(tmpdir(), "agent-fetch-expired-"));
+    cleanup.push(() => rm(dir, { recursive: true, force: true }));
+    const cachePath = join(dir, "token-cache.json");
+    const cache = new FileTokenCache(cachePath);
+    await cache.set(`${server.url}/expires`, {
+      authorization: "L402 expired-mac:expired-pre",
+      expiresAt: Math.floor(Date.now() / 1000) - 10,
+    });
+
+    let payCalls = 0;
+    const response = await agentFetch(`${server.url}/expires`, {
+      tokenCache: cache,
+      pay: async () => {
+        payCalls += 1;
+        return {
+          preimage: "exp-pre",
+          amountPaidSats: 6,
+        };
+      },
+    });
+
+    expect(response.status).toBe(200);
+    expect(payCalls).toBe(1);
+    expect(server.hits["GET /expires"]).toBe(2);
+    expect(seenAuth[0]).toBeNull();
+    expect(seenAuth[1]).toBe("L402 exp-mac:exp-pre");
   });
 
   it("enforces maxPaymentSats before dispatching payment", async () => {

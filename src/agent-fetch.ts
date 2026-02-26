@@ -40,7 +40,17 @@ export async function agentFetch(
 
   const cached = await options.tokenCache?.get(url);
   if (cached) {
-    return fetchWithProof(input, options.requestInit, cached.authorization, fetchImpl);
+    const cachedResponse = await fetchWithProof(
+      input,
+      options.requestInit,
+      cached.authorization,
+      fetchImpl,
+    );
+    if (cachedResponse.status !== 401 && cachedResponse.status !== 402) {
+      return cachedResponse;
+    }
+
+    await options.tokenCache?.delete(url);
   }
 
   const response = await fetchImpl(input, options.requestInit);

@@ -96,6 +96,24 @@ Exports from `src/index.ts`:
 
 Default cache location is chosen by the caller. In this suite, `agent-wallet` uses `~/.zbd-wallet/token-cache.json`.
 
+## Examples
+
+- `examples/zbd-agent-fetch.mjs`: end-to-end paid fetch using ZBD API for invoice payment
+- `examples/fetch-with-known-proof.mjs`: call a protected endpoint with a precomputed L402 token
+
+Run from this repo:
+
+```bash
+npm run build
+PROTECTED_URL="http://localhost:8787/protected" ZBD_API_KEY=<your_api_key> npm run example:zbd
+```
+
+If you already have an authorization token:
+
+```bash
+PROTECTED_URL="http://localhost:8787/protected" L402_AUTHORIZATION="L402 <macaroon>:<preimage>" npm run example:proof
+```
+
 ## Scripts
 
 ```bash
@@ -104,6 +122,8 @@ npm run test
 npm run lint
 npm run typecheck
 npm run smoke:imports
+npm run example:zbd
+npm run example:proof
 npm run release:dry-run
 ```
 
