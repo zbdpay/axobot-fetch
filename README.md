@@ -9,6 +9,8 @@ This package handles the full payment challenge flow:
 - retry with `Authorization` proof
 - cache proofs locally to avoid duplicate payments
 
+Want to run this immediately? See [Examples (Fastest Way to Run)](#examples-fastest-way-to-run).
+
 ## Requirements
 
 - Node.js `>=22`
@@ -96,7 +98,9 @@ Exports from `src/index.ts`:
 
 Default cache location is chosen by the caller. In this suite, `agent-wallet` uses `~/.zbd-wallet/token-cache.json`.
 
-## Examples
+## Examples (Fastest Way to Run)
+
+If you want a working paid-request flow in minutes, start with these scripts before wiring your own app code.
 
 - `examples/zbd-agent-fetch.mjs`: end-to-end paid fetch using ZBD API for invoice payment
 - `examples/fetch-with-known-proof.mjs`: call a protected endpoint with a precomputed L402 token
