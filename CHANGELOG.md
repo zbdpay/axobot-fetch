@@ -1,3 +1,9 @@
+## [1.1.0](https://github.com/zbdpay/agent-fetch/compare/1.0.3...1.1.0) (2026-02-28)
+
+### Features
+
+* **agent-fetch:** route L402 payments through zbd.ai shield proxy ([0a864a0](https://github.com/zbdpay/agent-fetch/commit/0a864a074842dea10839da2af3ae2f91c9f60b3a))
+
 ## [1.0.3](https://github.com/zbdpay/agent-fetch/compare/1.0.2...1.0.3) (2026-02-26)
 
 ### Bug Fixes
