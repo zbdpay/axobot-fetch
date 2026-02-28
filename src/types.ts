@@ -34,6 +34,10 @@ export interface TokenCache {
   delete(url: string): Promise<void>;
 }
 
+export interface PaymentContext {
+  url: string;
+}
+
 export interface AgentFetchOptions {
   fetchImpl?: typeof fetch;
   tokenCache?: TokenCache;
@@ -43,6 +47,6 @@ export interface AgentFetchOptions {
   paymentPollIntervalMs?: number;
   now?: () => number;
   sleep?: (ms: number) => Promise<void>;
-  pay: (challenge: PaymentChallenge) => Promise<PaidChallenge>;
+  pay: (challenge: PaymentChallenge, context?: PaymentContext) => Promise<PaidChallenge>;
   waitForPayment?: (paymentId: string) => Promise<PaymentSettlement>;
 }

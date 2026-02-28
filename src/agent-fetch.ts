@@ -82,7 +82,7 @@ export async function agentFetch(
     );
   }
 
-  let paid: PaidChallenge = await options.pay(challenge);
+  let paid: PaidChallenge = await options.pay(challenge, { url });
 
   if (!paid.preimage) {
     const paymentId = paid.paymentId;
