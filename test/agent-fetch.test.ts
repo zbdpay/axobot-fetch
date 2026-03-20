@@ -11,7 +11,7 @@ import {
   payChallenge,
   requestChallenge,
 } from "../src/index.js";
-import { startMockServer } from "./fixtures/mock-server.js";
+import { startMockServer } from "./fixtures/mock-fetch.js";
 
 const cleanup: Array<() => Promise<void>> = [];
 
@@ -27,16 +27,17 @@ afterEach(async () => {
 describe("public API foundation", () => {
   it("passes through non-402 responses without paying", async () => {
     const server = await startMockServer({
-      "GET /public": (_req, res) => {
-        res.statusCode = 200;
-        res.setHeader("content-type", "application/json");
-        res.end(JSON.stringify({ ok: true }));
-      },
+      "GET /public": async () =>
+        new Response(JSON.stringify({ ok: true }), {
+          status: 200,
+          headers: { "content-type": "application/json" },
+        }),
     });
     cleanup.push(() => server.close());
 
     let payCalls = 0;
     const response = await agentFetch(`${server.url}/public`, {
+      fetchImpl: server.fetch,
       pay: async () => {
         payCalls += 1;
         return { preimage: "never" };
@@ -98,29 +99,33 @@ describe("public API foundation", () => {
 
   it("retries 402 flow and stores proof token", async () => {
     const server = await startMockServer({
-      "GET /protected": (req, res) => {
-        const auth = req.headers.authorization;
+      "GET /protected": async (request) => {
+        const auth = request.headers.get("authorization");
 
         if (!auth) {
-          res.statusCode = 402;
-          res.setHeader("content-type", "application/json");
-          res.setHeader(
-            "www-authenticate",
-            'L402 macaroon="mock-macaroon", invoice="lnbc1mock", paymentHash="mock-hash", amountSats="5"',
+          return new Response(
+            JSON.stringify({
+              macaroon: "mock-macaroon",
+              invoice: "lnbc1mock",
+              paymentHash: "mock-hash",
+              amountSats: 5,
+              expiresAt: Math.floor(Date.now() / 1000) + 30,
+            }),
+            {
+              status: 402,
+              headers: {
+                "content-type": "application/json",
+                "www-authenticate":
+                  'L402 macaroon="mock-macaroon", invoice="lnbc1mock", paymentHash="mock-hash", amountSats="5"',
+              },
+            },
           );
-          res.end(JSON.stringify({
-            macaroon: "mock-macaroon",
-            invoice: "lnbc1mock",
-            paymentHash: "mock-hash",
-            amountSats: 5,
-            expiresAt: Math.floor(Date.now() / 1000) + 30,
-          }));
-          return;
         }
 
-        res.statusCode = 200;
-        res.setHeader("content-type", "application/json");
-        res.end(JSON.stringify({ ok: true, authorization: auth }));
+        return new Response(JSON.stringify({ ok: true, authorization: auth }), {
+          status: 200,
+          headers: { "content-type": "application/json" },
+        });
       },
     });
     cleanup.push(() => server.close());
@@ -131,6 +136,7 @@ describe("public API foundation", () => {
     const cache = new FileTokenCache(cachePath);
 
     const response = await agentFetch(`${server.url}/protected`, {
+      fetchImpl: server.fetch,
       tokenCache: cache,
       pay: async () => ({
         preimage: "mock-preimage",
@@ -145,6 +151,7 @@ describe("public API foundation", () => {
     expect(cacheContents).toContain("mock-preimage");
 
     const second = await agentFetch(`${server.url}/protected`, {
+      fetchImpl: server.fetch,
       tokenCache: cache,
       pay: async () => {
         throw new Error("pay should not be called when token cache is valid");
@@ -156,22 +163,14 @@ describe("public API foundation", () => {
 
   it("drops stale cached token and retries payment flow", async () => {
     const server = await startMockServer({
-      "GET /stale": (req, res) => {
-        const auth = req.headers.authorization;
+      "GET /stale": async (request) => {
+        const auth = request.headers.get("authorization");
         if (auth === "L402 stale-mac:stale-pre") {
-          res.statusCode = 401;
-          res.end("stale");
-          return;
+          return new Response("stale", { status: 401 });
         }
 
         if (!auth) {
-          res.statusCode = 402;
-          res.setHeader("content-type", "application/json");
-          res.setHeader(
-            "www-authenticate",
-            'L402 macaroon="fresh-mac", invoice="lnbc1fresh", paymentHash="fresh-hash", amountSats="7"',
-          );
-          res.end(
+          return new Response(
             JSON.stringify({
               challenge: {
                 scheme: "L402",
@@ -181,19 +180,25 @@ describe("public API foundation", () => {
                 amountSats: 7,
               },
             }),
+            {
+              status: 402,
+              headers: {
+                "content-type": "application/json",
+                "www-authenticate":
+                  'L402 macaroon="fresh-mac", invoice="lnbc1fresh", paymentHash="fresh-hash", amountSats="7"',
+              },
+            },
           );
-          return;
         }
 
         if (auth === "L402 fresh-mac:fresh-pre") {
-          res.statusCode = 200;
-          res.setHeader("content-type", "application/json");
-          res.end(JSON.stringify({ ok: true }));
-          return;
+          return new Response(JSON.stringify({ ok: true }), {
+            status: 200,
+            headers: { "content-type": "application/json" },
+          });
         }
 
-        res.statusCode = 403;
-        res.end("unexpected_authorization");
+        return new Response("unexpected_authorization", { status: 403 });
       },
     });
     cleanup.push(() => server.close());
@@ -208,6 +213,7 @@ describe("public API foundation", () => {
 
     let payCalls = 0;
     const response = await agentFetch(`${server.url}/stale`, {
+      fetchImpl: server.fetch,
       tokenCache: cache,
       pay: async () => {
         payCalls += 1;
@@ -230,18 +236,12 @@ describe("public API foundation", () => {
   it("evicts expired token and repays without sending stale authorization", async () => {
     const seenAuth: Array<string | null> = [];
     const server = await startMockServer({
-      "GET /expires": (req, res) => {
-        const auth = req.headers.authorization ?? null;
+      "GET /expires": async (request) => {
+        const auth = request.headers.get("authorization");
         seenAuth.push(auth);
 
         if (!auth) {
-          res.statusCode = 402;
-          res.setHeader("content-type", "application/json");
-          res.setHeader(
-            "www-authenticate",
-            'L402 macaroon="exp-mac", invoice="lnbc1exp", paymentHash="exp-hash", amountSats="6"',
-          );
-          res.end(
+          return new Response(
             JSON.stringify({
               challenge: {
                 scheme: "L402",
@@ -252,18 +252,22 @@ describe("public API foundation", () => {
                 expiresAt: Math.floor(Date.now() / 1000) + 120,
               },
             }),
+            {
+              status: 402,
+              headers: {
+                "content-type": "application/json",
+                "www-authenticate":
+                  'L402 macaroon="exp-mac", invoice="lnbc1exp", paymentHash="exp-hash", amountSats="6"',
+              },
+            },
           );
-          return;
         }
 
         if (auth === "L402 exp-mac:exp-pre") {
-          res.statusCode = 200;
-          res.end("ok");
-          return;
+          return new Response("ok", { status: 200 });
         }
 
-        res.statusCode = 401;
-        res.end("unexpected_authorization");
+        return new Response("unexpected_authorization", { status: 401 });
       },
     });
     cleanup.push(() => server.close());
@@ -279,6 +283,7 @@ describe("public API foundation", () => {
 
     let payCalls = 0;
     const response = await agentFetch(`${server.url}/expires`, {
+      fetchImpl: server.fetch,
       tokenCache: cache,
       pay: async () => {
         payCalls += 1;
@@ -298,14 +303,14 @@ describe("public API foundation", () => {
 
   it("enforces maxPaymentSats before dispatching payment", async () => {
     const server = await startMockServer({
-      "GET /cap": (_req, res) => {
-        res.statusCode = 402;
-        res.setHeader(
-          "www-authenticate",
-          'L402 macaroon="mock-macaroon", invoice="lnbc1mock", paymentHash="mock-hash", amountSats="8"',
-        );
-        res.end();
-      },
+      "GET /cap": async () =>
+        new Response(null, {
+          status: 402,
+          headers: {
+            "www-authenticate":
+              'L402 macaroon="mock-macaroon", invoice="lnbc1mock", paymentHash="mock-hash", amountSats="8"',
+          },
+        }),
     });
     cleanup.push(() => server.close());
 
@@ -313,6 +318,7 @@ describe("public API foundation", () => {
 
     await expect(
       agentFetch(`${server.url}/cap`, {
+        fetchImpl: server.fetch,
         maxPaymentSats: 5,
         pay: async () => {
           payCalls += 1;
@@ -326,19 +332,18 @@ describe("public API foundation", () => {
 
   it("polls for async settlement until completed", async () => {
     const server = await startMockServer({
-      "GET /async": (req, res) => {
-        if (!req.headers.authorization) {
-          res.statusCode = 402;
-          res.setHeader(
-            "www-authenticate",
-            'L402 macaroon="mock-macaroon", invoice="lnbc1mock", paymentHash="mock-hash", amountSats="4"',
-          );
-          res.end();
-          return;
+      "GET /async": async (request) => {
+        if (!request.headers.get("authorization")) {
+          return new Response(null, {
+            status: 402,
+            headers: {
+              "www-authenticate":
+                'L402 macaroon="mock-macaroon", invoice="lnbc1mock", paymentHash="mock-hash", amountSats="4"',
+            },
+          });
         }
 
-        res.statusCode = 200;
-        res.end("ok");
+        return new Response("ok", { status: 200 });
       },
     });
     cleanup.push(() => server.close());
@@ -347,6 +352,7 @@ describe("public API foundation", () => {
     let pollIndex = 0;
 
     const response = await agentFetch(`${server.url}/async`, {
+      fetchImpl: server.fetch,
       pay: async () => ({ paymentId: "pay-1", preimage: "" }),
       waitForPayment: async () => {
         const status = statuses[Math.min(pollIndex, statuses.length - 1)];
@@ -373,14 +379,14 @@ describe("public API foundation", () => {
 
   it("throws deterministic timeout when async settlement does not complete", async () => {
     const server = await startMockServer({
-      "GET /timeout": (_req, res) => {
-        res.statusCode = 402;
-        res.setHeader(
-          "www-authenticate",
-          'L402 macaroon="mock-macaroon", invoice="lnbc1mock", paymentHash="mock-hash", amountSats="4"',
-        );
-        res.end();
-      },
+      "GET /timeout": async () =>
+        new Response(null, {
+          status: 402,
+          headers: {
+            "www-authenticate":
+              'L402 macaroon="mock-macaroon", invoice="lnbc1mock", paymentHash="mock-hash", amountSats="4"',
+          },
+        }),
     });
     cleanup.push(() => server.close());
 
@@ -388,6 +394,7 @@ describe("public API foundation", () => {
 
     await expect(
       agentFetch(`${server.url}/timeout`, {
+        fetchImpl: server.fetch,
         pay: async () => ({ paymentId: "pay-timeout", preimage: "" }),
         waitForPayment: async () => ({
           status: "pending",
