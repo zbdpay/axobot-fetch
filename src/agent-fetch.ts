@@ -72,6 +72,59 @@ export async function agentFetch(
         },
   );
 
+  if (challenge.scheme === "x402") {
+    if (!options.payX402) {
+      throw new Error("x402 payment required but no payX402 hook provided");
+    }
+
+    if (
+      typeof options.maxPaymentSats === "number" &&
+      Number.isFinite(options.maxPaymentSats)
+    ) {
+      const maxAmountRequired = challenge.paymentRequirement.maxAmountRequired;
+      const isMaxAmountRequiredInteger = /^\d+$/.test(maxAmountRequired);
+      const maxAmountRequiredUnits =
+        isMaxAmountRequiredInteger && BigInt(maxAmountRequired) > 0n
+          ? BigInt(maxAmountRequired)
+          : null;
+
+      let challengeAmountSats: number | null = null;
+      const extra = challenge.paymentRequirement.extra;
+      if (maxAmountRequiredUnits !== null && extra && typeof extra === "object") {
+        const amountSats = (extra as Record<string, unknown>).amountSats;
+        if (typeof amountSats === "number" && Number.isFinite(amountSats)) {
+          challengeAmountSats = amountSats;
+        } else if (typeof amountSats === "string" && /^\d+$/.test(amountSats)) {
+          const parsedAmountSats = BigInt(amountSats);
+          if (parsedAmountSats <= BigInt(Number.MAX_SAFE_INTEGER)) {
+            challengeAmountSats = Number(parsedAmountSats);
+          }
+        }
+      }
+
+      const amountToCompareSats =
+        challengeAmountSats ?? options.maxPaymentSats + 1;
+      if (amountToCompareSats > options.maxPaymentSats) {
+        throw new Error(
+          `Payment required: ${amountToCompareSats} sats exceeds limit of ${options.maxPaymentSats} sats`,
+        );
+      }
+    }
+
+    const paidX402 = await options.payX402(challenge, { url });
+    if (!paidX402.paymentPayload) {
+      throw new Error("x402 payment response missing paymentPayload");
+    }
+
+    const headers = new Headers(options.requestInit?.headers ?? {});
+    headers.set("X-PAYMENT", paidX402.paymentPayload);
+    return fetchImpl(input, {
+      ...options.requestInit,
+      method,
+      headers,
+    });
+  }
+
   if (
     typeof options.maxPaymentSats === "number" &&
     Number.isFinite(options.maxPaymentSats) &&

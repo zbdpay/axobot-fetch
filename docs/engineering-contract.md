@@ -1,7 +1,7 @@
-# Engineering Contract — `@zbdpay/agent-fetch`
+# Engineering Contract — `@axobot/fetch`
 
 > **Status**: Normative. All implementation work in this repository must conform to every rule in this document.
-> **Scope**: L402 client library. Handles challenge parsing, ZBD payment execution, preimage proof assembly, and token caching on behalf of callers.
+> **Scope**: L402 and x402 client library. Handles challenge parsing, ZBD payment execution, x402 shield execution, preimage proof assembly, and token caching on behalf of callers.
 
 ---
 
@@ -156,6 +156,17 @@ ZBD payment confirmation is asynchronous. After calling `POST /v0/payments`, the
 ### 4.6 Token Cache Compatibility
 
 The `FileTokenCache` format is a JSON object keyed by URL. The schema is considered stable within a major version. Any change to the cache schema that would invalidate existing cache files requires a major version bump.
+
+### 4.7 x402 Compatibility
+
+The client MUST recognize `x402` challenges emitted in JSON bodies that advertise `x402Version` and an `accepts` list. When an x402 challenge is detected, the client MUST:
+
+- Pass the parsed challenge object to the configured `payX402` hook
+- Reject the request if `payX402` is not configured
+- Set the `X-PAYMENT` header from `paymentPayload` on retry
+- Enforce `maxPaymentSats` against any `extra.amountSats` metadata when present
+
+The x402 payment hook is shield-backed and may return a pending approval or a hard failure. Those failures MUST surface as errors to the caller.
 
 ---
 

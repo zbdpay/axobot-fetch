@@ -1,4 +1,9 @@
-import { type PaidChallenge, type PaymentChallenge } from "./types.js";
+import {
+  type AnyPaymentChallenge,
+  type PaidChallenge,
+  type PaymentChallenge,
+  type X402PaymentChallenge,
+} from "./types.js";
 
 interface ChallengeInput {
   status: number;
@@ -63,9 +68,44 @@ function parseBodyChallenge(bodyText?: string): Partial<PaymentChallenge> {
   }
 }
 
-export function requestChallenge(input: ChallengeInput): PaymentChallenge {
+function parseX402Challenge(bodyText?: string): X402PaymentChallenge | null {
+  if (!bodyText) {
+    return null;
+  }
+
+  try {
+    const parsed = JSON.parse(bodyText) as Record<string, unknown>;
+    if (!("x402Version" in parsed)) {
+      return null;
+    }
+
+    const accepts = parsed.accepts;
+    if (!Array.isArray(accepts) || accepts.length === 0) {
+      return null;
+    }
+
+    const first = accepts[0];
+    if (!first || typeof first !== "object") {
+      return null;
+    }
+
+    return {
+      scheme: "x402",
+      paymentRequirement: first as X402PaymentChallenge["paymentRequirement"],
+    };
+  } catch {
+    return null;
+  }
+}
+
+export function requestChallenge(input: ChallengeInput): AnyPaymentChallenge {
   if (input.status !== 402) {
     throw new Error("requestChallenge expects a 402 response");
+  }
+
+  const x402Challenge = parseX402Challenge(input.bodyText);
+  if (x402Challenge) {
+    return x402Challenge;
   }
 
   const header = input.headers.get("www-authenticate") ?? "";

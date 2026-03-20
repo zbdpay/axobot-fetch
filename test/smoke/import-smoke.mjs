@@ -4,7 +4,8 @@ import {
   fetchWithProof,
   payChallenge,
   requestChallenge,
-} from "@zbdpay/agent-fetch";
+  zbdPayX402,
+} from "@axobot/fetch";
 
 const checks = [
   ["agentFetch", typeof agentFetch === "function"],
@@ -12,6 +13,7 @@ const checks = [
   ["payChallenge", typeof payChallenge === "function"],
   ["fetchWithProof", typeof fetchWithProof === "function"],
   ["FileTokenCache", typeof FileTokenCache === "function"],
+  ["zbdPayX402", typeof zbdPayX402 === "function"],
 ];
 
 const failures = checks.filter(([, ok]) => !ok).map(([name]) => name);

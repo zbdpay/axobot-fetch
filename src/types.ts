@@ -1,7 +1,7 @@
-export type ChallengeScheme = "L402" | "LSAT";
+export type ChallengeScheme = "L402" | "LSAT" | "x402";
 
 export interface PaymentChallenge {
-  scheme: ChallengeScheme;
+  scheme: "L402" | "LSAT";
   macaroon: string;
   invoice: string;
   paymentHash: string;
@@ -9,10 +9,30 @@ export interface PaymentChallenge {
   expiresAt?: number;
 }
 
+export interface X402PaymentChallenge {
+  scheme: "x402";
+  paymentRequirement: {
+    scheme: string;
+    network: string;
+    maxAmountRequired: string;
+    resource: string;
+    payTo: string;
+    asset: string;
+    maxTimeoutSeconds: number;
+    extra?: Record<string, unknown>;
+  };
+}
+
+export type AnyPaymentChallenge = PaymentChallenge | X402PaymentChallenge;
+
 export interface PaidChallenge {
   preimage: string;
   amountPaidSats?: number;
   paymentId?: string;
+}
+
+export interface X402PaidChallenge {
+  paymentPayload: string;
 }
 
 export interface PaymentSettlement {
@@ -48,5 +68,9 @@ export interface AgentFetchOptions {
   now?: () => number;
   sleep?: (ms: number) => Promise<void>;
   pay: (challenge: PaymentChallenge, context?: PaymentContext) => Promise<PaidChallenge>;
+  payX402?: (
+    challenge: X402PaymentChallenge,
+    context?: PaymentContext,
+  ) => Promise<X402PaidChallenge>;
   waitForPayment?: (paymentId: string) => Promise<PaymentSettlement>;
 }
