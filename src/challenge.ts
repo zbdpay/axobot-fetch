@@ -151,10 +151,11 @@ export function requestChallenge(input: ChallengeInput): AnyPaymentChallenge {
 
   const paymentHeader = input.headers.get("www-authenticate") ?? "";
   if (paymentHeader.trim().toLowerCase().startsWith("payment ")) {
+    const details = parseMppDetails(input.bodyText);
     return {
       scheme: "MPP",
       challenge: parsePaymentAuthenticateHeader(paymentHeader),
-      details: parseMppDetails(input.bodyText),
+      ...(details ? { details } : {}),
     } satisfies MppPaymentChallenge;
   }
 
