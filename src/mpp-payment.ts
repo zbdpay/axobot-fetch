@@ -3,6 +3,7 @@ import {
   createZbdLightningAdapter,
   openLightningSession,
   payLightningChargeChallenge,
+  topUpLightningSession,
   type LightningSessionHandle,
 } from "@axobot/mppx";
 
@@ -83,6 +84,22 @@ export function zbdPayMpp(
     const key = resolveKey(challenge, context);
     const existing = await sessionStore.get(key);
     if (existing) {
+      const shouldTopUp =
+        challenge.details?.reason === "insufficient_balance" ||
+        challenge.details?.reason === "session_idle";
+      if (shouldTopUp) {
+        const toppedUp = await topUpLightningSession({
+          challenge: challenge.challenge,
+          session: existing,
+          adapter,
+          source: options.source,
+        });
+
+        return {
+          authorization: `Payment ${toppedUp.authorization}`,
+        };
+      }
+
       return {
         authorization: `Payment ${createLightningSessionBearerAuthorization({
           challenge: challenge.challenge,

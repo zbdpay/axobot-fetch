@@ -28,6 +28,15 @@ export interface X402PaymentChallenge {
 export interface MppPaymentChallenge {
   scheme: "MPP";
   challenge: PaymentChallengeContext;
+  details?: {
+    invoice?: string | undefined;
+    depositInvoice?: string | undefined;
+    paymentHash?: string | undefined;
+    amountSats?: number | undefined;
+    depositSats?: number | undefined;
+    sessionId?: string | undefined;
+    reason?: string | undefined;
+  };
 }
 
 export type AnyPaymentChallenge =

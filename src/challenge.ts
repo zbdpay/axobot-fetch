@@ -100,6 +100,50 @@ function parseX402Challenge(bodyText?: string): X402PaymentChallenge | null {
   }
 }
 
+function parseMppDetails(bodyText?: string): MppPaymentChallenge["details"] | undefined {
+  if (!bodyText) {
+    return undefined;
+  }
+
+  try {
+    const parsed = JSON.parse(bodyText) as Record<string, unknown>;
+    const paymentChallenge =
+      parsed.paymentChallenge && typeof parsed.paymentChallenge === "object"
+        ? (parsed.paymentChallenge as Record<string, unknown>)
+        : null;
+    if (!paymentChallenge) {
+      return undefined;
+    }
+
+    const result: NonNullable<MppPaymentChallenge["details"]> = {};
+    if (typeof parsed.invoice === "string") {
+      result.invoice = parsed.invoice;
+    }
+    if (typeof parsed.depositInvoice === "string") {
+      result.depositInvoice = parsed.depositInvoice;
+    }
+    if (typeof parsed.paymentHash === "string") {
+      result.paymentHash = parsed.paymentHash;
+    }
+    if (typeof parsed.amountSats === "number" && Number.isFinite(parsed.amountSats)) {
+      result.amountSats = parsed.amountSats;
+    }
+    if (typeof parsed.depositSats === "number" && Number.isFinite(parsed.depositSats)) {
+      result.depositSats = parsed.depositSats;
+    }
+    if (typeof parsed.sessionId === "string") {
+      result.sessionId = parsed.sessionId;
+    }
+    if (typeof parsed.reason === "string") {
+      result.reason = parsed.reason;
+    }
+
+    return Object.keys(result).length > 0 ? result : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
 export function requestChallenge(input: ChallengeInput): AnyPaymentChallenge {
   if (input.status !== 402) {
     throw new Error("requestChallenge expects a 402 response");
@@ -110,6 +154,7 @@ export function requestChallenge(input: ChallengeInput): AnyPaymentChallenge {
     return {
       scheme: "MPP",
       challenge: parsePaymentAuthenticateHeader(paymentHeader),
+      details: parseMppDetails(input.bodyText),
     } satisfies MppPaymentChallenge;
   }
 

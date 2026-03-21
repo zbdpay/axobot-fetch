@@ -153,4 +153,103 @@ describe("MPP support", () => {
     expect(server.hits["POST /v0/payments"]).toBe(1);
     expect(server.hits["POST /v0/charges"] ?? 0).toBe(0);
   });
+
+  it("tops up an existing lightning session when the server signals insufficient balance", async () => {
+    const initialRequest = encodePaymentRequest({
+      amount: "5",
+      currency: "sat",
+      unitType: "token",
+      methodDetails: {
+        depositInvoice: "lnbc1depositinvoice",
+        paymentHash: "22".repeat(32),
+        depositAmount: "100",
+        idleTimeout: "300",
+      },
+    });
+
+    const topUpRequest = encodePaymentRequest({
+      amount: "5",
+      currency: "sat",
+      unitType: "token",
+      methodDetails: {
+        depositInvoice: "lnbc1topupinvoice",
+        paymentHash: "55".repeat(32),
+        depositAmount: "100",
+        idleTimeout: "300",
+      },
+    });
+
+    const server = await startMockServer({
+      "POST /v0/payments": async () =>
+        new Response(
+          JSON.stringify({
+            data: {
+              id: "pay_123",
+              preimage: "33".repeat(32),
+              paymentHash: "44".repeat(32),
+              amount_sats: 100,
+            },
+          }),
+          {
+            status: 200,
+            headers: { "content-type": "application/json" },
+          },
+        ),
+    });
+
+    const payMpp = zbdPayMpp({
+      apiKey: "api-key",
+      zbdApiBaseUrl: server.url,
+      fetchImpl: server.fetch,
+      returnLightningAddress: "agent@axo.bot",
+    });
+
+    const initialChallenge = requestChallenge({
+      status: 402,
+      headers: new Headers({
+        "www-authenticate": `Payment id="session-1", realm="mock.axo.test", method="lightning", intent="session", request="${initialRequest}", expires="2026-03-20T12:00:00Z"`,
+      }),
+      bodyText: JSON.stringify({
+        paymentChallenge: {
+          id: "session-1",
+        },
+        depositInvoice: "lnbc1depositinvoice",
+        paymentHash: "22".repeat(32),
+        amountSats: 5,
+        depositSats: 100,
+        reason: "new_session",
+      }),
+    });
+
+    const opened = await payMpp(initialChallenge, {
+      url: `${server.url}/stream`,
+    });
+
+    expect(opened.authorization.startsWith("Payment ")).toBe(true);
+
+    const topUpChallenge = requestChallenge({
+      status: 402,
+      headers: new Headers({
+        "www-authenticate": `Payment id="session-2", realm="mock.axo.test", method="lightning", intent="session", request="${topUpRequest}", expires="2026-03-20T12:00:00Z"`,
+      }),
+      bodyText: JSON.stringify({
+        paymentChallenge: {
+          id: "session-2",
+        },
+        depositInvoice: "lnbc1topupinvoice",
+        paymentHash: "55".repeat(32),
+        amountSats: 5,
+        depositSats: 100,
+        sessionId: "22".repeat(32),
+        reason: "insufficient_balance",
+      }),
+    });
+
+    const toppedUp = await payMpp(topUpChallenge, {
+      url: `${server.url}/stream`,
+    });
+
+    expect(toppedUp.authorization.startsWith("Payment ")).toBe(true);
+    expect(server.hits["POST /v0/payments"]).toBe(2);
+  });
 });
