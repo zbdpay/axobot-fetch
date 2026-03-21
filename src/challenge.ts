@@ -1,5 +1,7 @@
+import { parsePaymentAuthenticateHeader } from "@axobot/mppx";
 import {
   type AnyPaymentChallenge,
+  type MppPaymentChallenge,
   type PaidChallenge,
   type PaymentChallenge,
   type X402PaymentChallenge,
@@ -101,6 +103,14 @@ function parseX402Challenge(bodyText?: string): X402PaymentChallenge | null {
 export function requestChallenge(input: ChallengeInput): AnyPaymentChallenge {
   if (input.status !== 402) {
     throw new Error("requestChallenge expects a 402 response");
+  }
+
+  const paymentHeader = input.headers.get("www-authenticate") ?? "";
+  if (paymentHeader.trim().toLowerCase().startsWith("payment ")) {
+    return {
+      scheme: "MPP",
+      challenge: parsePaymentAuthenticateHeader(paymentHeader),
+    } satisfies MppPaymentChallenge;
   }
 
   const x402Challenge = parseX402Challenge(input.bodyText);

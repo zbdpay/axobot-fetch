@@ -1,4 +1,6 @@
-export type ChallengeScheme = "L402" | "LSAT" | "x402";
+import type { PaymentChallengeContext } from "@axobot/mppx";
+
+export type ChallengeScheme = "L402" | "LSAT" | "x402" | "MPP";
 
 export interface PaymentChallenge {
   scheme: "L402" | "LSAT";
@@ -23,7 +25,15 @@ export interface X402PaymentChallenge {
   };
 }
 
-export type AnyPaymentChallenge = PaymentChallenge | X402PaymentChallenge;
+export interface MppPaymentChallenge {
+  scheme: "MPP";
+  challenge: PaymentChallengeContext;
+}
+
+export type AnyPaymentChallenge =
+  | PaymentChallenge
+  | X402PaymentChallenge
+  | MppPaymentChallenge;
 
 export interface PaidChallenge {
   preimage: string;
@@ -33,6 +43,10 @@ export interface PaidChallenge {
 
 export interface X402PaidChallenge {
   paymentPayload: string;
+}
+
+export interface MppPaidChallenge {
+  authorization: string;
 }
 
 export interface PaymentSettlement {
@@ -72,5 +86,9 @@ export interface AgentFetchOptions {
     challenge: X402PaymentChallenge,
     context?: PaymentContext,
   ) => Promise<X402PaidChallenge>;
+  payMpp?: (
+    challenge: MppPaymentChallenge,
+    context?: PaymentContext,
+  ) => Promise<MppPaidChallenge>;
   waitForPayment?: (paymentId: string) => Promise<PaymentSettlement>;
 }

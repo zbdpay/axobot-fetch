@@ -125,6 +125,23 @@ export async function agentFetch(
     });
   }
 
+  if (challenge.scheme === "MPP") {
+    if (!options.payMpp) {
+      throw new Error("MPP payment required but no payMpp hook provided");
+    }
+
+    const paidMpp = await options.payMpp(challenge, { url });
+    if (!paidMpp.authorization) {
+      throw new Error("MPP payment response missing authorization");
+    }
+
+    await options.tokenCache?.set(url, {
+      authorization: paidMpp.authorization,
+    });
+
+    return fetchWithProof(input, { ...options.requestInit, method }, paidMpp.authorization, fetchImpl);
+  }
+
   if (
     typeof options.maxPaymentSats === "number" &&
     Number.isFinite(options.maxPaymentSats) &&
