@@ -4,7 +4,7 @@ import {
   fetchWithProof,
   payChallenge,
   requestChallenge,
-} from "@zbdpay/agent-fetch";
+} from "@axobot/fetch";
 
 const checks = [
   ["agentFetch", typeof agentFetch === "function"],

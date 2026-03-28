@@ -1,4 +1,4 @@
-# Engineering Contract — `@zbdpay/agent-fetch`
+# Engineering Contract — `@axobot/fetch`
 
 > **Status**: Normative. All implementation work in this repository must conform to every rule in this document.
 > **Scope**: L402 client library. Handles challenge parsing, ZBD payment execution, preimage proof assembly, and token caching on behalf of callers.

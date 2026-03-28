@@ -1,4 +1,4 @@
-# @zbdpay/agent-fetch
+# @axobot/fetch
 
 L402-aware fetch client for paid HTTP resources.
 
@@ -19,13 +19,13 @@ Want to run this immediately? See [Examples (Fastest Way to Run)](#examples-fast
 ## Install
 
 ```bash
-npm install @zbdpay/agent-fetch
+npm install @axobot/fetch
 ```
 
 ## Quick Start
 
 ```ts
-import { agentFetch, FileTokenCache } from "@zbdpay/agent-fetch";
+import { agentFetch, FileTokenCache } from "@axobot/fetch";
 
 const tokenCache = new FileTokenCache(`${process.env.HOME}/.zbd-wallet/token-cache.json`);
 
@@ -134,4 +134,4 @@ npm run release:dry-run
 ## Related Packages
 
 - `@zbdpay/agent-wallet` uses this package for `zbdw fetch`
-- `@zbdpay/agent-pay` provides middleware that emits L402 challenges this client can consume
+- `@axobot/pay` provides middleware that emits L402 challenges this client can consume

@@ -1,16 +1,16 @@
 {
-  "name": "@zbdpay/agent-fetch",
+  "name": "@axobot/fetch",
   "version": "1.1.0",
   "description": "L402-capable fetch client with ZBD payment integration hooks",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/zbdpay/agent-fetch.git"
+    "url": "git+https://github.com/zbdpay/axobot-fetch.git"
   },
   "bugs": {
-    "url": "https://github.com/zbdpay/agent-fetch/issues"
+    "url": "https://github.com/zbdpay/axobot-fetch/issues"
   },
-  "homepage": "https://github.com/zbdpay/agent-fetch#readme",
+  "homepage": "https://github.com/zbdpay/axobot-fetch#readme",
   "keywords": [
     "zbd",
     "lightning",
