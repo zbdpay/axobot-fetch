@@ -21,7 +21,7 @@ function parseBooleanEnv(value: string | undefined): boolean | undefined {
   return undefined;
 }
 
-function resolveShieldEnabled(explicitValue: boolean | undefined, zbdAiBaseUrl: string | undefined): boolean {
+function resolveShieldEnabled(explicitValue: boolean | undefined, axoBaseUrl: string | undefined): boolean {
   if (explicitValue !== undefined) {
     return explicitValue;
   }
@@ -31,7 +31,7 @@ function resolveShieldEnabled(explicitValue: boolean | undefined, zbdAiBaseUrl: 
     return envValue;
   }
 
-  return typeof zbdAiBaseUrl === "string" && zbdAiBaseUrl.length > 0;
+  return typeof axoBaseUrl === "string" && axoBaseUrl.length > 0;
 }
 
 function isNetworkFailure(error: unknown): boolean {
@@ -106,7 +106,7 @@ function toPaidChallenge(parsed: PaymentResponse): PaidChallenge {
 export interface ZbdL402PaymentOptions {
   apiKey?: string;
   zbdApiBaseUrl?: string;
-  zbdAiBaseUrl?: string;
+  axoBaseUrl?: string;
   shieldEnabled?: boolean;
   fetchImpl?: typeof fetch;
   warningLogger?: (message: string) => void;
@@ -151,11 +151,11 @@ export async function zbdPayL402Invoice(
   context: PaymentContext,
   options: ZbdL402PaymentOptions = {},
 ): Promise<PaidChallenge> {
-  const zbdAiBaseUrl = options.zbdAiBaseUrl ?? process.env.ZBD_AI_BASE_URL;
-  const shieldEnabled = resolveShieldEnabled(options.shieldEnabled, zbdAiBaseUrl);
+  const axoBaseUrl = options.axoBaseUrl ?? process.env.AXO_BASE_URL;
+  const shieldEnabled = resolveShieldEnabled(options.shieldEnabled, axoBaseUrl);
   const idempotencyKeyFactory = options.idempotencyKeyFactory ?? (() => `agent-fetch-l402-${randomUUID()}`);
 
-  if (shieldEnabled && zbdAiBaseUrl) {
+  if (shieldEnabled && axoBaseUrl) {
     const apiKey = options.apiKey ?? process.env.ZBD_API_KEY;
     if (!apiKey) {
       throw new Error("Missing ZBD_API_KEY for shield L402 payment");
@@ -164,7 +164,7 @@ export async function zbdPayL402Invoice(
     const fetchImpl = options.fetchImpl ?? fetch;
 
     try {
-      const response = await fetchImpl(`${zbdAiBaseUrl}/api/shield/l402`, {
+      const response = await fetchImpl(`${axoBaseUrl}/api/shield/l402`, {
         method: "POST",
         headers: {
           apikey: apiKey,
