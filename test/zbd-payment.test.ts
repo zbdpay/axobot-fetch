@@ -13,14 +13,14 @@ const challenge: PaymentChallenge = {
 
 afterEach(() => {
   delete process.env.ZBD_SHIELD_ENABLED;
-  delete process.env.ZBD_AI_BASE_URL;
+  delete process.env.AXO_BASE_URL;
   delete process.env.ZBD_API_KEY;
 });
 
 describe("zbdPayL402Invoice", () => {
   it("sends shield payload with invoice amount url and idempotency key", async () => {
     process.env.ZBD_API_KEY = "api-key";
-    process.env.ZBD_AI_BASE_URL = "https://zbd-ai.local";
+    process.env.AXO_BASE_URL = "https://zbd-ai.local";
 
     const fetchImpl = vi.fn<typeof fetch>(async () => {
       return new Response(
@@ -55,7 +55,7 @@ describe("zbdPayL402Invoice", () => {
 
   it("throws descriptive allowance error on shield 403", async () => {
     process.env.ZBD_API_KEY = "api-key";
-    process.env.ZBD_AI_BASE_URL = "https://zbd-ai.local";
+    process.env.AXO_BASE_URL = "https://zbd-ai.local";
 
     const fetchImpl = vi.fn(async () => {
       return new Response(
@@ -77,7 +77,7 @@ describe("zbdPayL402Invoice", () => {
 
   it("throws pending approval error on shield 202", async () => {
     process.env.ZBD_API_KEY = "api-key";
-    process.env.ZBD_AI_BASE_URL = "https://zbd-ai.local";
+    process.env.AXO_BASE_URL = "https://zbd-ai.local";
 
     const fetchImpl = vi.fn(async () => {
       return new Response(
@@ -99,7 +99,7 @@ describe("zbdPayL402Invoice", () => {
 
   it("falls back to direct payment when shield network call fails", async () => {
     process.env.ZBD_API_KEY = "api-key";
-    process.env.ZBD_AI_BASE_URL = "https://zbd-ai.local";
+    process.env.AXO_BASE_URL = "https://zbd-ai.local";
 
     const fetchImpl = vi
       .fn<typeof fetch>()
@@ -135,7 +135,7 @@ describe("zbdPayL402Invoice", () => {
 
   it("throws shield error when shield returns 5xx", async () => {
     process.env.ZBD_API_KEY = "api-key";
-    process.env.ZBD_AI_BASE_URL = "https://zbd-ai.local";
+    process.env.AXO_BASE_URL = "https://zbd-ai.local";
 
     const fetchImpl = vi.fn<typeof fetch>().mockResolvedValueOnce(
       new Response(JSON.stringify({ error: "shield unavailable" }), {

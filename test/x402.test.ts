@@ -5,7 +5,7 @@ import { startMockServer } from "./fixtures/mock-fetch.js";
 
 afterEach(() => {
   delete process.env.ZBD_API_KEY;
-  delete process.env.ZBD_AI_BASE_URL;
+  delete process.env.AXO_BASE_URL;
 });
 
 describe("x402 support", () => {
@@ -166,7 +166,7 @@ describe("x402 support", () => {
 
   it("posts x402 payments to the shield endpoint", async () => {
     process.env.ZBD_API_KEY = "api-key";
-    process.env.ZBD_AI_BASE_URL = "https://shield.axo.test";
+    process.env.AXO_BASE_URL = "https://shield.axo.test";
 
     const fetchImpl = vi.fn<typeof fetch>(async (input, init) => {
       expect(String(input)).toBe("https://shield.axo.test/api/shield/x402");
