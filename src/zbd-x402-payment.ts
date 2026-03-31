@@ -4,7 +4,7 @@ import type { PaymentContext, X402PaidChallenge, X402PaymentChallenge } from "./
 
 export interface ZbdX402PaymentOptions {
   apiKey?: string;
-  zbdAiBaseUrl?: string;
+  axoBaseUrl?: string;
   fetchImpl?: typeof fetch;
   idempotencyKeyFactory?: () => string;
 }
@@ -32,15 +32,16 @@ export function zbdPayX402(options: ZbdX402PaymentOptions = {}) {
       throw new Error("Missing ZBD_API_KEY for x402 shield payment");
     }
 
-    const zbdAiBaseUrl = options.zbdAiBaseUrl ?? process.env.ZBD_AI_BASE_URL;
-    if (!zbdAiBaseUrl) {
-      throw new Error("Missing ZBD_AI_BASE_URL for x402 shield payment");
+    const axoBaseUrl = options.axoBaseUrl ?? process.env.AXO_BASE_URL;
+    if (!axoBaseUrl) {
+      throw new Error("Missing AXO_BASE_URL for x402 shield payment");
     }
+      throw new Error("Missing AXO_BASE_URL for x402 shield payment");
 
     const fetchImpl = options.fetchImpl ?? fetch;
     const idempotencyKeyFactory = options.idempotencyKeyFactory ?? (() => `agent-fetch-x402-${randomUUID()}`);
 
-    const response = await fetchImpl(`${zbdAiBaseUrl}/api/shield/x402`, {
+    const response = await fetchImpl(`${axoBaseUrl}/api/shield/x402`, {
       method: "POST",
       headers: {
         apikey: apiKey,
