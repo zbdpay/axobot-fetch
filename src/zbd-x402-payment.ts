@@ -36,7 +36,6 @@ export function zbdPayX402(options: ZbdX402PaymentOptions = {}) {
     if (!axoBaseUrl) {
       throw new Error("Missing AXO_BASE_URL for x402 shield payment");
     }
-      throw new Error("Missing AXO_BASE_URL for x402 shield payment");
 
     const fetchImpl = options.fetchImpl ?? fetch;
     const idempotencyKeyFactory = options.idempotencyKeyFactory ?? (() => `agent-fetch-x402-${randomUUID()}`);
@@ -44,8 +43,8 @@ export function zbdPayX402(options: ZbdX402PaymentOptions = {}) {
     const response = await fetchImpl(`${axoBaseUrl}/api/shield/x402`, {
       method: "POST",
       headers: {
-        apikey: apiKey,
-        "x-api-key": apiKey,
+        apikey: apiKey!,
+        "x-api-key": apiKey!,
         "content-type": "application/json",
       },
       body: JSON.stringify({
