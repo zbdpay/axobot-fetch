@@ -1,3 +1,15 @@
+## [1.1.0](https://github.com/zbdpay/agent-fetch/compare/1.0.3...1.1.0) (2026-02-28)
+
+### Features
+
+* **agent-fetch:** route L402 payments through zbd.ai shield proxy ([0a864a0](https://github.com/zbdpay/agent-fetch/commit/0a864a074842dea10839da2af3ae2f91c9f60b3a))
+
+## [1.0.3](https://github.com/zbdpay/agent-fetch/compare/1.0.2...1.0.3) (2026-02-26)
+
+### Bug Fixes
+
+* add stale-token recovery and fetch e2e examples ([d606bf0](https://github.com/zbdpay/agent-fetch/commit/d606bf036a9c408fbb583349b921232a68330c4a))
+
 ## [1.0.2](https://github.com/zbdpay/agent-fetch/compare/1.0.1...1.0.2) (2026-02-25)
 
 ### Bug Fixes
