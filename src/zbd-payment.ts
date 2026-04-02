@@ -134,7 +134,6 @@ async function zbdPayInvoiceDirect(
     },
     body: JSON.stringify({
       invoice,
-      amount: amountSats,
     }),
   });
 
