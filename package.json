@@ -40,6 +40,7 @@
     "example:proof": "node ./examples/fetch-with-known-proof.mjs",
     "example:zbd": "node ./examples/zbd-agent-fetch.mjs",
     "example:test1": "node ./examples/test1.mjs",
+    "example:local": "node ./examples/local-axopay.mjs",
     "lint": "npm run typecheck",
     "release": "semantic-release",
     "release:dry-run": "SEMANTIC_RELEASE_DRY_RUN=true semantic-release --dry-run --no-ci",
