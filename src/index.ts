@@ -1,4 +1,4 @@
-export { agentFetch } from "./agent-fetch.js";
+export { axoFetch } from "./axo-fetch.js";
 export { requestChallenge, payChallenge, fetchWithProof } from "./challenge.js";
 export { FileTokenCache } from "./file-token-cache.js";
 export { zbdPayMpp } from "./mpp-payment.js";

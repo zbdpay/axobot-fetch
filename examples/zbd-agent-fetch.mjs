@@ -1,4 +1,4 @@
-import { FileTokenCache, agentFetch } from "../dist/index.js";
+import { FileTokenCache, axoFetch } from "../dist/index.js";
 
 const requiredEnv = ["ZBD_API_KEY", "PROTECTED_URL"];
 for (const key of requiredEnv) {
@@ -53,7 +53,7 @@ const run = async () => {
   const url = process.env.PROTECTED_URL;
   const tokenCache = new FileTokenCache(tokenCachePath);
 
-  const response = await agentFetch(url, {
+  const response = await axoFetch(url, {
     tokenCache,
     maxPaymentSats,
     pay: async (challenge) => {

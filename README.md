@@ -25,11 +25,11 @@ npm install @axobot/fetch
 ## Quick Start
 
 ```ts
-import { agentFetch, FileTokenCache } from "@axobot/fetch";
+import { axoFetch, FileTokenCache } from "@axobot/fetch";
 
 const tokenCache = new FileTokenCache(`${process.env.HOME}/.zbd-wallet/token-cache.json`);
 
-const response = await agentFetch("https://example.com/protected", {
+const response = await axoFetch("https://example.com/protected", {
   tokenCache,
   maxPaymentSats: 100,
   pay: async (challenge) => {
@@ -70,7 +70,7 @@ console.log(response.status, body);
 
 Exports from `src/index.ts`:
 
-- `agentFetch`
+- `axoFetch`
 - `requestChallenge`
 - `payChallenge`
 - `fetchWithProof`

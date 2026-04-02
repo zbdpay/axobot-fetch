@@ -6,7 +6,7 @@ import { afterEach, describe, expect, it } from "vitest";
 
 import {
   FileTokenCache,
-  agentFetch,
+  axoFetch,
   fetchWithProof,
   payChallenge,
   requestChallenge,
@@ -36,7 +36,7 @@ describe("public API foundation", () => {
     cleanup.push(() => server.close());
 
     let payCalls = 0;
-    const response = await agentFetch(`${server.url}/public`, {
+    const response = await axoFetch(`${server.url}/public`, {
       fetchImpl: server.fetch,
       pay: async () => {
         payCalls += 1;
@@ -135,7 +135,7 @@ describe("public API foundation", () => {
     const cachePath = join(dir, "token-cache.json");
     const cache = new FileTokenCache(cachePath);
 
-    const response = await agentFetch(`${server.url}/protected`, {
+    const response = await axoFetch(`${server.url}/protected`, {
       fetchImpl: server.fetch,
       tokenCache: cache,
       pay: async () => ({
@@ -150,7 +150,7 @@ describe("public API foundation", () => {
     const cacheContents = await readFile(cachePath, "utf8");
     expect(cacheContents).toContain("mock-preimage");
 
-    const second = await agentFetch(`${server.url}/protected`, {
+    const second = await axoFetch(`${server.url}/protected`, {
       fetchImpl: server.fetch,
       tokenCache: cache,
       pay: async () => {
@@ -212,7 +212,7 @@ describe("public API foundation", () => {
     });
 
     let payCalls = 0;
-    const response = await agentFetch(`${server.url}/stale`, {
+    const response = await axoFetch(`${server.url}/stale`, {
       fetchImpl: server.fetch,
       tokenCache: cache,
       pay: async () => {
@@ -282,7 +282,7 @@ describe("public API foundation", () => {
     });
 
     let payCalls = 0;
-    const response = await agentFetch(`${server.url}/expires`, {
+    const response = await axoFetch(`${server.url}/expires`, {
       fetchImpl: server.fetch,
       tokenCache: cache,
       pay: async () => {
@@ -317,7 +317,7 @@ describe("public API foundation", () => {
     let payCalls = 0;
 
     await expect(
-      agentFetch(`${server.url}/cap`, {
+      axoFetch(`${server.url}/cap`, {
         fetchImpl: server.fetch,
         maxPaymentSats: 5,
         pay: async () => {
@@ -351,7 +351,7 @@ describe("public API foundation", () => {
     const statuses: Array<"pending" | "completed" | "failed"> = ["pending", "completed"];
     let pollIndex = 0;
 
-    const response = await agentFetch(`${server.url}/async`, {
+    const response = await axoFetch(`${server.url}/async`, {
       fetchImpl: server.fetch,
       pay: async () => ({ paymentId: "pay-1", preimage: "" }),
       waitForPayment: async () => {
@@ -393,7 +393,7 @@ describe("public API foundation", () => {
     let tick = 0;
 
     await expect(
-      agentFetch(`${server.url}/timeout`, {
+      axoFetch(`${server.url}/timeout`, {
         fetchImpl: server.fetch,
         pay: async () => ({ paymentId: "pay-timeout", preimage: "" }),
         waitForPayment: async () => ({

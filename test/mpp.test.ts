@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it } from "vitest";
 
 import { encodePaymentRequest } from "@axobot/mppx";
 
-import { agentFetch, requestChallenge, zbdPayMpp } from "../src/index.js";
+import { axoFetch, requestChallenge, zbdPayMpp } from "../src/index.js";
 import { startMockServer } from "./fixtures/mock-fetch.js";
 
 afterEach(() => {
@@ -69,7 +69,7 @@ describe("MPP support", () => {
       },
     });
 
-    const response = await agentFetch(`${server.url}/mpp-charge`, {
+    const response = await axoFetch(`${server.url}/mpp-charge`, {
       fetchImpl: server.fetch,
       pay: async () => {
         throw new Error("L402 pay hook should not be used");
@@ -141,7 +141,7 @@ describe("MPP support", () => {
       returnLightningAddress: "agent@axo.bot",
     });
 
-    const response = await agentFetch(`${server.url}/stream`, {
+    const response = await axoFetch(`${server.url}/stream`, {
       fetchImpl: server.fetch,
       pay: async () => {
         throw new Error("L402 pay hook should not be used");

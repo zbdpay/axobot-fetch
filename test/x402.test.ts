@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { agentFetch, requestChallenge, zbdPayX402 } from "../src/index.js";
+import { axoFetch, requestChallenge, zbdPayX402 } from "../src/index.js";
 import { startMockServer } from "./fixtures/mock-fetch.js";
 
 afterEach(() => {
@@ -77,7 +77,7 @@ describe("x402 support", () => {
 
     const payX402 = vi.fn(async () => ({ paymentPayload: "x402-payload" }));
 
-    const response = await agentFetch(`${server.url}/premium`, {
+    const response = await axoFetch(`${server.url}/premium`, {
       fetchImpl: server.fetch,
       pay: async () => {
         throw new Error("pay should not be used for x402");
@@ -119,7 +119,7 @@ describe("x402 support", () => {
     });
 
     await expect(
-      agentFetch(`${server.url}/premium`, {
+      axoFetch(`${server.url}/premium`, {
         fetchImpl: server.fetch,
         pay: async () => ({ preimage: "never" }),
       }),
@@ -155,7 +155,7 @@ describe("x402 support", () => {
     });
 
     await expect(
-      agentFetch(`${server.url}/premium`, {
+      axoFetch(`${server.url}/premium`, {
         fetchImpl: server.fetch,
         maxPaymentSats: 50,
         pay: async () => ({ preimage: "never" }),

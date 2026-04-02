@@ -1,6 +1,6 @@
 import {
   FileTokenCache,
-  agentFetch,
+  axoFetch,
   fetchWithProof,
   payChallenge,
   requestChallenge,
@@ -8,7 +8,7 @@ import {
 } from "@axobot/fetch";
 
 const checks = [
-  ["agentFetch", typeof agentFetch === "function"],
+  ["axoFetch", typeof axoFetch === "function"],
   ["requestChallenge", typeof requestChallenge === "function"],
   ["payChallenge", typeof payChallenge === "function"],
   ["fetchWithProof", typeof fetchWithProof === "function"],

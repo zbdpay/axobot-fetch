@@ -28,7 +28,7 @@ async function readBodyText(response: Response): Promise<string | undefined> {
   return response.text();
 }
 
-export async function agentFetch(
+export async function axoFetch(
   input: RequestInfo | URL,
   options: AgentFetchOptions,
 ): Promise<Response> {
