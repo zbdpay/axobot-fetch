@@ -1,0 +1,101 @@
+{
+  "active_plan": "/Users/andreneves/Code/zbd/axo/axobot-fetch/.sisyphus/plans/payment-adapters.md",
+  "started_at": "2026-04-02T01:08:51.491Z",
+  "session_ids": [
+    "ses_2b45eb260ffe2pkQwQoOut2lsC",
+    "ses_2b44344f2ffefVeKuIfJ85I2Sa",
+    "ses_2b442ad1affeH8qT4o0DtX3sod",
+    "ses_2b441ea19ffeUhakGvWypuAoSl",
+    "ses_2b4414ee8ffenkVnjLjzTLeCgE",
+    "ses_2b44046f1ffeZth8vp2kyXwenc",
+    "ses_2b43f7549ffe0RWr4pPUfZ7Ds1",
+    "ses_2b43e3bbbffeBGBVe9SLCyThGu",
+    "ses_2b43d60e2ffekhszlgFvhyEDea",
+    "ses_2b43c1147ffem56W5P2oLlgAZS"
+  ],
+  "plan_name": "payment-adapters",
+  "agent": "atlas",
+  "task_sessions": {
+    "todo:1": {
+      "task_key": "todo:1",
+      "task_label": "1",
+      "task_title": "Create adapter directory structure and common types",
+      "session_id": "ses_2b44344f2ffefVeKuIfJ85I2Sa",
+      "agent": "Sisyphus-Junior",
+      "category": "quick",
+      "updated_at": "2026-04-02T01:09:34.310Z"
+    },
+    "todo:2": {
+      "task_key": "todo:2",
+      "task_label": "2",
+      "task_title": "Implement Phoenixd adapter",
+      "session_id": "ses_2b442ad1affeH8qT4o0DtX3sod",
+      "agent": "Sisyphus-Junior",
+      "category": "quick",
+      "updated_at": "2026-04-02T01:10:22.216Z"
+    },
+    "todo:3": {
+      "task_key": "todo:3",
+      "task_label": "3",
+      "task_title": "Implement CLN adapter",
+      "session_id": "ses_2b441ea19ffeUhakGvWypuAoSl",
+      "agent": "Sisyphus-Junior",
+      "category": "quick",
+      "updated_at": "2026-04-02T01:11:04.122Z"
+    },
+    "todo:4": {
+      "task_key": "todo:4",
+      "task_label": "4",
+      "task_title": "Refactor ZBD to common interface",
+      "session_id": "ses_2b4414ee8ffenkVnjLjzTLeCgE",
+      "agent": "Sisyphus-Junior",
+      "category": "quick",
+      "updated_at": "2026-04-02T01:12:09.914Z"
+    },
+    "todo:5": {
+      "task_key": "todo:5",
+      "task_label": "5",
+      "task_title": "Implement LND adapter",
+      "session_id": "ses_2b44046f1ffeZth8vp2kyXwenc",
+      "agent": "Sisyphus-Junior",
+      "category": "quick",
+      "updated_at": "2026-04-02T01:12:59.452Z"
+    },
+    "todo:6": {
+      "task_key": "todo:6",
+      "task_label": "6",
+      "task_title": "Implement Breez Spark adapter",
+      "session_id": "ses_2b43f7549ffe0RWr4pPUfZ7Ds1",
+      "agent": "Sisyphus-Junior",
+      "category": "deep",
+      "updated_at": "2026-04-02T01:14:20.210Z"
+    },
+    "todo:7": {
+      "task_key": "todo:7",
+      "task_label": "7",
+      "task_title": "Create factory pattern and auto-detection",
+      "session_id": "ses_2b43e3bbbffeBGBVe9SLCyThGu",
+      "agent": "Sisyphus-Junior",
+      "category": "quick",
+      "updated_at": "2026-04-02T01:15:19.415Z"
+    },
+    "todo:8": {
+      "task_key": "todo:8",
+      "task_label": "8",
+      "task_title": "Add examples for each adapter",
+      "session_id": "ses_2b43d60e2ffekhszlgFvhyEDea",
+      "agent": "Sisyphus-Junior",
+      "category": "quick",
+      "updated_at": "2026-04-02T01:16:45.530Z"
+    },
+    "todo:9": {
+      "task_key": "todo:9",
+      "task_label": "9",
+      "task_title": "Update exports and documentation",
+      "session_id": "ses_2b43c1147ffem56W5P2oLlgAZS",
+      "agent": "Sisyphus-Junior",
+      "category": "quick",
+      "updated_at": "2026-04-02T01:17:29.328Z"
+    }
+  }
+}
